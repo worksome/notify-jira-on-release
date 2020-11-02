@@ -1,0 +1,15 @@
+name: 'Send commits to Jira'
+description: 'Takes a Github push event, parses the commits and sends them to Jira one by one'
+inputs:
+  commits:
+    description: 'Array containing the commits from the Github push event'
+    required: true
+  jira-webhook:
+    description: 'URL for Jira webhook'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
+branding:
+  icon: 'git-branch'
+  color: 'gray-dark'
