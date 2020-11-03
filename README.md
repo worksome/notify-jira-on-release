@@ -5,7 +5,7 @@ A Github Action that takes a Github push event, parses the commits and sends the
 # Usage
 
 ```yaml
-- uses: worksome/send-commits-to-jira@1.0.0
+- uses: worksome/send-commits-to-jira@v1
   with:
     commits: ${{ toJson(github.event.commits) }}
     jira-webhook: https://automation.atlassian.com/pro/hooks/token
