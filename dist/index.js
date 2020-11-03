@@ -2067,9 +2067,12 @@ async function run() {
             core.setFailed("The provided Jira webhook URL wasn't valid.");
         }
 
-        commits.forEach((commit) => {
-            sendRequestToJira(jiraWebhook, commit);
-        });
+        let issueKeys = [...new Set(commits.flatMap((commit) => getJiraIssueKey(commit)).filter((jiraKey) => jiraKey !== null).map((jiraKey) => jiraKey.toUpperCase()))];
+
+        issueKeys.forEach((issue) => {
+            sendRequestToJira(jiraWebhook, issue);
+        })
+
     } catch (error) {
         core.error(error);
         core.setFailed(error.message);
@@ -2088,16 +2091,16 @@ function isValidHttpUrl(string) {
     return url.protocol === "http:" || url.protocol === "https:";
 }
 
-function sendRequestToJira(jiraWebhookUrl, commit) {
+function getJiraIssueKey(commit) {
     let commitMsg = commit.message;
-    let jiraIssue = commitMsg.match(/JIRA-\d+/i);
-    if (jiraIssue === null) {
-        return;
-    }
+    return commitMsg.match(/JIRA-\d+/i);
+}
+
+function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
     core.info(jiraIssue);
     fetch(jiraWebhookUrl, {
         method : "POST",
-        body: JSON.stringify({"issues":jiraIssue,"body":commit.message})
+        body: JSON.stringify({"issues":[jiraIssue],"body":commit.message})
     }).catch(
         error => core.error(error)
     );
