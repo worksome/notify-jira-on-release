@@ -2091,10 +2091,16 @@ function isValidHttpUrl(string) {
 function sendRequestToJira(jiraWebhookUrl, commit) {
     let commitMsg = commit.message;
     let jiraIssue = commitMsg.match(/JIRA-\d+/i);
+    if (jiraIssue === null) {
+        return;
+    }
+    core.info(jiraIssue);
     fetch(jiraWebhookUrl, {
         method : "POST",
-        body: JSON.stringify({"issues":[jiraIssue],"body":commit.message})
-    });
+        body: JSON.stringify({"issues":jiraIssue,"body":commit.message})
+    }).catch(
+        error => core.error(error)
+    );
 }
 
 run();
