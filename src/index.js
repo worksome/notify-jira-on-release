@@ -37,11 +37,7 @@ function sendRequestToJira(jiraWebhookUrl, commit) {
     fetch(jiraWebhookUrl, {
         method : "POST",
         body: JSON.stringify({"issues":[jiraIssue],"body":commit.message})
-    }).then(
-        response => response.json()
-    ).then(
-        json => console.log(json)
-    );
+    });
 }
 
 run();
