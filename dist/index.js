@@ -2100,7 +2100,7 @@ function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
     core.info(jiraIssue);
     fetch(jiraWebhookUrl, {
         method : "POST",
-        body: JSON.stringify({"issues":[jiraIssue],"body":commit.message})
+        body: JSON.stringify({"issues":[jiraIssue],"body":jiraIssue})
     }).catch(
         error => core.error(error)
     );
