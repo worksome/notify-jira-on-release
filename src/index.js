@@ -3,7 +3,7 @@ const core = require("@actions/core");
 async function run() {
     try {
         const jiraWebhook = core.getInput("jira-webhook");
-        const commits = core.getInput("commits");
+        const commits = JSON.parse(core.getInput("commits"));
 
         if(!isValidHttpUrl(jiraWebhook)) {
             core.setFailed("The provided Jira webhook URL wasn't valid.");
