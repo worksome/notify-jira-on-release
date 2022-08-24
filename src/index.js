@@ -35,8 +35,7 @@ function isValidHttpUrl(string) {
 }
 
 function getJiraIssueKey(commit) {
-    let commitMsg = commit.message;
-    return commitMsg.match(/JIRA-\d+/i);
+    return commit.match(/JIRA-\d+/i);
 }
 
 function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
