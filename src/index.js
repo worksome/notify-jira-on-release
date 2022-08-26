@@ -3,8 +3,10 @@ const fetch = require("node-fetch");
 
 async function run() {
     try {
+        core.debug(core.getInput("commits"));
         const jiraWebhook = core.getInput("jira-webhook");
         const commits = JSON.parse(core.getInput("commits"));
+        console.log(commits);
 
         if(!isValidHttpUrl(jiraWebhook)) {
             core.setFailed("The provided Jira webhook URL wasn't valid.");
@@ -35,6 +37,7 @@ function isValidHttpUrl(string) {
 }
 
 function getJiraIssueKey(commit) {
+    core.debug(commit);
     return commit.match(/JIRA-\d+/i);
 }
 
