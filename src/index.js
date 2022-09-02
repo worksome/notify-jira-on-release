@@ -3,16 +3,24 @@ const fetch = require("node-fetch");
 
 async function run() {
     try {
-        core.debug(core.getInput("commits"));
         const jiraWebhook = core.getInput("jira-webhook");
+
+        core.setOutput('raw-commits', core.getInput("commits"));
+        core.debug(core.getInput("commits"));
+
         const commits = JSON.parse(core.getInput("commits"));
-        console.log(commits);
+
+        core.setOutput('parsed-commits', commits);
+        core.debug(commits);
 
         if(!isValidHttpUrl(jiraWebhook)) {
             core.setFailed("The provided Jira webhook URL wasn't valid.");
         }
 
         let issueKeys = [...new Set(commits.flatMap((commit) => getJiraIssueKey(commit)).filter((jiraKey) => jiraKey !== null).map((jiraKey) => jiraKey.toUpperCase()))];
+
+        core.setOutput('jira-issue-keys', issueKeys);
+        core.debug(issueKeys);
 
         issueKeys.forEach((issue) => {
             sendRequestToJira(jiraWebhook, issue);
@@ -37,12 +45,15 @@ function isValidHttpUrl(string) {
 }
 
 function getJiraIssueKey(commit) {
-    core.debug(commit);
-    return commit.match(/JIRA-\d+/i);
+    if (typeof commit !== 'undefined') {
+        return commit.match(/JIRA-\d+/i);
+    }
+
+    return null;
 }
 
 function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
-    core.info(jiraIssue);
+    core.debug(jiraIssue);
     fetch(jiraWebhookUrl, {
         method : "POST",
         body: JSON.stringify({"issues":[jiraIssue],"body":jiraIssue})
