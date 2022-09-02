@@ -7,6 +7,13 @@ inputs:
   jira-webhook:
     description: 'URL for Jira webhook'
     required: true
+outputs:
+  raw-commits:
+    description: 'Raw input of the commit messages'
+  parsed-commits:
+    description: 'Commit messages from JSON parse of the input'
+  jira-issue-keys:
+    description: 'JIRA issue keys parsed from the commit messages'
 runs:
   using: 'node12'
   main: 'dist/index.js'

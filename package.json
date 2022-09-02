@@ -1,17 +1,21 @@
 {
-  "name": "send-commits-to-jira",
-  "version": "1.0.0",
-  "description": "A Github Action that takes a Github push event, parses the commits and sends them to Jira one by one.",
-  "main": "index.js",
-  "dependencies": {
-    "@actions/core": "^1.2.6",
-    "node-fetch": "^2.6.1"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "name": "send-commits-to-jira",
+    "version": "1.4.0",
+    "description": "A Github Action that takes a Github push event, parses the commits and sends them to Jira one by one.",
+    "main": "index.js",
+    "dependencies": {
+        "@actions/core": "^1.2.6",
+        "node-fetch": "^2.6.7"
+    },
+    "devDependencies": {
+        "@vercel/ncc": "^0.34.0"
+    },
+    "scripts": {
+        "build": "ncc build src/index.js -o dist",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "bump": "npm version"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
 }
