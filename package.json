@@ -2,16 +2,19 @@
     "name": "send-commits-to-jira",
     "version": "1.4.0",
     "description": "A Github Action that takes a Github push event, parses the commits and sends them to Jira one by one.",
-    "main": "index.js",
+    "main": "dist/index.js",
     "dependencies": {
-        "@actions/core": "^1.2.6",
+        "@actions/core": "^1.10.0",
         "node-fetch": "^2.6.7"
     },
     "devDependencies": {
-        "@vercel/ncc": "^0.34.0"
+        "@types/node": "^18.11.9",
+        "@types/node-fetch": "^2.6.2",
+        "@vercel/ncc": "^0.34.0",
+        "typescript": "^4.9.3"
     },
     "scripts": {
-        "build": "ncc build src/index.js -o dist",
+        "build": "ncc build --license licenses.txt src/index.ts -o dist",
         "test": "echo \"Error: no test specified\" && exit 1",
         "bump": "npm version"
     },
