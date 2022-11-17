@@ -140,7 +140,6 @@ const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
 const os = __importStar(__nccwpck_require__(2037));
 const path = __importStar(__nccwpck_require__(1017));
-const uuid_1 = __nccwpck_require__(5840);
 const oidc_utils_1 = __nccwpck_require__(8041);
 /**
  * The code to exit an action
@@ -170,20 +169,9 @@ function exportVariable(name, val) {
     process.env[name] = convertedVal;
     const filePath = process.env['GITHUB_ENV'] || '';
     if (filePath) {
-        const delimiter = `ghadelimiter_${uuid_1.v4()}`;
-        // These should realistically never happen, but just in case someone finds a way to exploit uuid generation let's not allow keys or values that contain the delimiter.
-        if (name.includes(delimiter)) {
-            throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
-        }
-        if (convertedVal.includes(delimiter)) {
-            throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
-        }
-        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
-        file_command_1.issueCommand('ENV', commandValue);
+        return file_command_1.issueFileCommand('ENV', file_command_1.prepareKeyValueMessage(name, val));
     }
-    else {
-        command_1.issueCommand('set-env', { name }, convertedVal);
-    }
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -201,7 +189,7 @@ exports.setSecret = setSecret;
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_1.issueCommand('PATH', inputPath);
+        file_command_1.issueFileCommand('PATH', inputPath);
     }
     else {
         command_1.issueCommand('add-path', {}, inputPath);
@@ -241,7 +229,10 @@ function getMultilineInput(name, options) {
     const inputs = getInput(name, options)
         .split('\n')
         .filter(x => x !== '');
-    return inputs;
+    if (options && options.trimWhitespace === false) {
+        return inputs;
+    }
+    return inputs.map(input => input.trim());
 }
 exports.getMultilineInput = getMultilineInput;
 /**
@@ -274,8 +265,12 @@ exports.getBooleanInput = getBooleanInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('OUTPUT', file_command_1.prepareKeyValueMessage(name, value));
+    }
     process.stdout.write(os.EOL);
-    command_1.issueCommand('set-output', { name }, value);
+    command_1.issueCommand('set-output', { name }, utils_1.toCommandValue(value));
 }
 exports.setOutput = setOutput;
 /**
@@ -404,7 +399,11 @@ exports.group = group;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
-    command_1.issueCommand('save-state', { name }, value);
+    const filePath = process.env['GITHUB_STATE'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('STATE', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    command_1.issueCommand('save-state', { name }, utils_1.toCommandValue(value));
 }
 exports.saveState = saveState;
 /**
@@ -470,13 +469,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.issueCommand = void 0;
+exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__nccwpck_require__(7147));
 const os = __importStar(__nccwpck_require__(2037));
+const uuid_1 = __nccwpck_require__(5840);
 const utils_1 = __nccwpck_require__(5278);
-function issueCommand(command, message) {
+function issueFileCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
@@ -488,7 +488,22 @@ function issueCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueCommand = issueCommand;
+exports.issueFileCommand = issueFileCommand;
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${uuid_1.v4()}`;
+    const convertedValue = utils_1.toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
+}
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
@@ -6540,6 +6555,84 @@ module.exports.implForWrapper = function (wrapper) {
 
 /***/ }),
 
+/***/ 6144:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __nccwpck_require__(2186);
+const node_fetch_1 = __nccwpck_require__(467);
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const jiraWebhook = core.getInput('jira-webhook');
+            core.setOutput('raw-commits', core.getInput('commits'));
+            core.debug(core.getInput('commits'));
+            const commits = JSON.parse(core.getInput('commits'));
+            core.setOutput('parsed-commits', commits);
+            core.debug(JSON.stringify(commits));
+            if (!isValidHttpUrl(jiraWebhook)) {
+                core.setFailed('The provided Jira webhook URL wasn\'t valid.');
+            }
+            const isJiraKey = (jiraKey) => jiraKey !== null;
+            let issueKeys = [...new Set(commits
+                    .flatMap((commit) => getJiraIssueKey(commit))
+                    .filter(isJiraKey)
+                    .map((jiraKey) => jiraKey.toUpperCase()))];
+            core.setOutput('jira-issue-keys', issueKeys);
+            core.debug(JSON.stringify(issueKeys));
+            issueKeys.forEach((issue) => {
+                sendRequestToJira(jiraWebhook, issue);
+            });
+        }
+        catch (error) {
+            core.error(error);
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
+    });
+}
+function isValidHttpUrl(string) {
+    let url;
+    try {
+        url = new URL(string);
+    }
+    catch (_) {
+        return false;
+    }
+    return url.protocol === 'http:' || url.protocol === 'https:';
+}
+function getJiraIssueKey(commit) {
+    if (typeof commit !== 'undefined' && commit !== null) {
+        return commit.match(/JIRA-\d+/i);
+    }
+    return null;
+}
+function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
+    core.debug(jiraIssue);
+    (0, node_fetch_1.default)(jiraWebhookUrl, {
+        method: 'POST',
+        body: JSON.stringify({
+            issues: [jiraIssue],
+            body: jiraIssue
+        })
+    }).catch(error => core.error(error));
+}
+run();
+
+
+/***/ }),
+
 /***/ 2877:
 /***/ ((module) => {
 
@@ -6714,77 +6807,12 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
-const core = __nccwpck_require__(2186);
-const fetch = __nccwpck_require__(467);
-
-async function run() {
-    try {
-        const jiraWebhook = core.getInput("jira-webhook");
-
-        core.setOutput('raw-commits', core.getInput("commits"));
-        core.debug(core.getInput("commits"));
-
-        const commits = JSON.parse(core.getInput("commits"));
-
-        core.setOutput('parsed-commits', commits);
-        core.debug(commits);
-
-        if(!isValidHttpUrl(jiraWebhook)) {
-            core.setFailed("The provided Jira webhook URL wasn't valid.");
-        }
-
-        let issueKeys = [...new Set(commits.flatMap((commit) => getJiraIssueKey(commit)).filter((jiraKey) => jiraKey !== null).map((jiraKey) => jiraKey.toUpperCase()))];
-
-        core.setOutput('jira-issue-keys', issueKeys);
-        core.debug(issueKeys);
-
-        issueKeys.forEach((issue) => {
-            sendRequestToJira(jiraWebhook, issue);
-        })
-
-    } catch (error) {
-        core.error(error);
-        core.setFailed(error.message);
-    }
-}
-
-function isValidHttpUrl(string) {
-    let url;
-
-    try {
-        url = new URL(string);
-    } catch (_) {
-        return false;
-    }
-
-    return url.protocol === "http:" || url.protocol === "https:";
-}
-
-function getJiraIssueKey(commit) {
-    if (typeof commit !== 'undefined') {
-        return commit.match(/JIRA-\d+/i);
-    }
-
-    return null;
-}
-
-function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
-    core.debug(jiraIssue);
-    fetch(jiraWebhookUrl, {
-        method : "POST",
-        body: JSON.stringify({"issues":[jiraIssue],"body":jiraIssue})
-    }).catch(
-        error => core.error(error)
-    );
-}
-
-run();
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(6144);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
