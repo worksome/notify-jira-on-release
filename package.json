@@ -1,6 +1,6 @@
 {
     "name": "send-commits-to-jira",
-    "version": "1.4.0",
+    "version": "5.0.0",
     "description": "A Github Action that takes a Github push event, parses the commits and sends them to Jira one by one.",
     "main": "dist/index.js",
     "dependencies": {
