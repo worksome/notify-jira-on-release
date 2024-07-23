@@ -1,8 +1,8 @@
 name: 'Send commits to Jira'
-description: 'Takes a Github push event, parses the commits and sends them to Jira one by one'
+description: 'Parses a list of commit messages and sends the Jira ids to a Jira webhook.'
 inputs:
   commits:
-    description: 'Array containing the commit messages from the Github push event'
+    description: 'An array containing a list of commit messages'
     required: true
   jira-webhook:
     description: 'The URL for the Jira webhook'
