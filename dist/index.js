@@ -6705,6 +6705,7 @@ function run() {
                     .flatMap((commit) => getJiraIssueKey(commit))
                     .filter(isJiraKey)
                     .map((jiraKey) => jiraKey.toUpperCase()))];
+            core.info(`Found ${issueKeys.length} issue keys in ${commits.length} commits.`);
             core.setOutput('jira-issue-keys', issueKeys);
             core.debug(JSON.stringify(issueKeys));
             issueKeys.forEach((issue) => {
@@ -6735,7 +6736,7 @@ function getJiraIssueKey(commit) {
     return null;
 }
 function sendRequestToJira(jiraWebhookUrl, jiraIssue) {
-    core.debug(jiraIssue);
+    core.debug(`Sending ticket to Jira: ${jiraIssue}`);
     (0, node_fetch_1.default)(jiraWebhookUrl, {
         method: 'POST',
         body: JSON.stringify({
