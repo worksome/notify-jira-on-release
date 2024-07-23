@@ -26,13 +26,14 @@ async function run(): Promise<void> {
                 .map((jiraKey: string): string => jiraKey.toUpperCase())
         )];
 
+        core.info(`Found ${issueKeys.length} issue keys in ${commits.length} commits.`)
+
         core.setOutput('jira-issue-keys', issueKeys);
         core.debug(JSON.stringify(issueKeys));
 
-        issueKeys.forEach((issue) => {
+        issueKeys.forEach((issue: string) => {
             sendRequestToJira(jiraWebhook, issue);
         })
-
     } catch (error: any) {
         core.error(error);
 
@@ -40,7 +41,7 @@ async function run(): Promise<void> {
     }
 }
 
-function isValidHttpUrl(string: string) {
+function isValidHttpUrl(string: string): boolean {
     let url;
 
     try {
@@ -61,7 +62,7 @@ function getJiraIssueKey(commit: string | null): RegExpMatchArray | null {
 }
 
 function sendRequestToJira(jiraWebhookUrl: string, jiraIssue: string) {
-    core.debug(jiraIssue);
+    core.debug(`Sending ticket to Jira: ${jiraIssue}`);
 
     fetch(jiraWebhookUrl, {
         method: 'POST',

@@ -2,18 +2,18 @@ name: 'Send commits to Jira'
 description: 'Takes a Github push event, parses the commits and sends them to Jira one by one'
 inputs:
   commits:
-    description: 'Array containing the commits from the Github push event'
+    description: 'Array containing the commit messages from the Github push event'
     required: true
   jira-webhook:
-    description: 'URL for Jira webhook'
+    description: 'The URL for the Jira webhook'
     required: true
 outputs:
   raw-commits:
-    description: 'Raw input of the commit messages'
+    description: 'The raw input of the commit messages'
   parsed-commits:
-    description: 'Commit messages from JSON parse of the input'
+    description: 'The parsed commit messages from the input'
   jira-issue-keys:
-    description: 'JIRA issue keys parsed from the commit messages'
+    description: 'The JIRA issue keys parsed from the commit messages'
 runs:
   using: 'node20'
   main: 'dist/index.js'

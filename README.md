@@ -13,4 +13,4 @@ A GitHub Action that takes a GitHub push event, parses the commits and sends the
 
 # License
 
-The scripts and documentation in this project are released under the [MIT License](LICENSE)
+The scripts and documentation in this project are released under the [MIT License](LICENSE.md)
